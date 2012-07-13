@@ -1,8 +1,10 @@
 package com.smp.effects
 {
+	import com.smp.common.events.CustomEvent;
 	import com.smp.common.math.BezierCurve;
 	import com.smp.common.math.Geometry2D;
 	import flash.errors.IOError;
+	import flash.events.Event;
 	
 	import flash.display.Graphics;
 	import flash.geom.Point;
@@ -22,8 +24,37 @@ package com.smp.effects
 
 	public class  AnimatedBezierCurve extends BezierCurve
 	{
+		
+		protected var listeners:Array = [];
+		
 		public function AnimatedBezierCurve(graphics:Graphics) {
 			super(graphics);
+		}
+		
+		public function dispatchEvent(evt:String, data:Object = null)
+		{
+			var j:int, eventObj:CustomEvent;
+			for(j=0; j<listeners.length; j++){
+				if(listeners[j][0] == evt){
+					if(typeof listeners[j][1] === "function"){
+						eventObj = new CustomEvent(evt,data);
+						listeners[j][1](eventObj);
+					}
+				}
+			}
+		}
+		
+		public function addEventListener(evt,callback){
+			listeners.push([evt,callback]);
+		}
+		public function removeEventListener(evt, callback){
+			var j:int;
+			for(j=0; j<listeners.length; j++){
+				if(listeners[j][0] == evt && listeners[j][1] == callback){
+					listeners.splice(j,1);
+					//no break is used because there might have been redundancy of listeners
+				}
+			}
 		}
 		
 		public function animateCubic(startpoint:Point, destpoint:Point, control1:Point, control2:Point,timespan:Number):void {
@@ -47,7 +78,7 @@ package com.smp.effects
 			var tstrokes:Number = Math.floor(1 / inc);
 			var loopcount:Number = Math.floor(tstrokes / steps);
 			var delay:Number = Math.floor(timespan * 1000 / steps);
-			trace(steps+' // '+ tstrokes+' // '+loopcount+' // '+ delay);
+			//trace(steps+' // '+ tstrokes+' // '+loopcount+' // '+ delay);
 			
 			timer = new Timer(delay);
 			timer.addEventListener(TimerEvent.TIMER, draw);
@@ -59,6 +90,7 @@ package com.smp.effects
 					if (i > 1) {
 						timer.stop();
 						timer.removeEventListener(TimerEvent.TIMER, draw);
+						dispatchEvent(Event.COMPLETE);
 						//timer = null;
 					}else{
 						if (nextPoint) {
