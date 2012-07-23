@@ -89,6 +89,7 @@ package com.smp.effects{
 			//trace(interval)
 			var timer:Timer = new Timer(interval);
 			
+			destroyEffects(textField);
 			_calls.push({target:textField, timer:timer});
 			
 			
@@ -133,6 +134,7 @@ package com.smp.effects{
 			var interval:Number = time / (arrayWords.length/numWords);
 			var timer:Timer = new Timer(interval);
 			
+			destroyEffects(textField);
 			_calls.push( { target:textField, timer:timer } );
 			
 			textField.text = "";
